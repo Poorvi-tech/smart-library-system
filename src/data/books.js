@@ -10,7 +10,7 @@ export const books = [
     category: 'Design',
     course: 'CSE',
     dueDate: null,
-    description: 'A guide to building smart library ecosystems with user-centric design.'
+    description: 'A comprehensive guide to building smart library ecosystems with user-centric design principles and modern interface patterns.'
   },
   {
     id: 'B102',
@@ -23,7 +23,7 @@ export const books = [
     category: 'Programming',
     course: 'CSE',
     dueDate: '2026-05-01',
-    description: 'Modern front-end patterns for campus and library applications.'
+    description: 'Modern front-end patterns for campus and library applications using React, Hooks, and optimized state management.'
   },
   {
     id: 'B103',
@@ -36,7 +36,7 @@ export const books = [
     category: 'Analytics',
     course: 'CSE',
     dueDate: null,
-    description: 'Insights into analytics, bookings, and student engagement.'
+    description: 'Advanced insights into library analytics, user bookings, and data-driven strategies for student engagement.'
   },
   {
     id: 'B104',
@@ -49,7 +49,7 @@ export const books = [
     category: 'Technology',
     course: 'ECE',
     dueDate: '2026-04-28',
-    description: 'Practical strategies for QR-based workflows in libraries.'
+    description: 'Practical strategies for implementing QR-based workflows in educational environments and modern libraries.'
   },
   {
     id: 'B105',
@@ -62,7 +62,7 @@ export const books = [
     category: 'Management',
     course: 'MBA',
     dueDate: null,
-    description: 'A holistic view of shelf location, availability, and inventory control.'
+    description: 'A holistic view of shelf location tracking, availability management, and inventory control for large-scale libraries.'
   },
   {
     id: 'B106',
@@ -75,6 +75,110 @@ export const books = [
     category: 'Student Life',
     course: 'BA',
     dueDate: '2026-05-08',
-    description: 'Material on student reading habits and campus resource planning.'
+    description: 'In-depth research on student reading habits, campus resource planning, and the future of digital literacy.'
+  },
+  {
+    id: 'B107',
+    title: 'Advanced Neural Networks',
+    author: 'Dr. Robert Smith',
+    status: 'Available',
+    shelf: 'C2',
+    floor: '2',
+    section: 'AI Laboratory',
+    category: 'Artificial Intelligence',
+    course: 'CSE',
+    dueDate: null,
+    description: 'Deep dive into neural network architectures, backpropagation, and real-world AI implementations.'
+  },
+  {
+    id: 'B108',
+    title: 'Embedded Systems & IoT',
+    author: 'Elena Rossi',
+    status: 'Available',
+    shelf: 'E1',
+    floor: '1',
+    section: 'Hardware Hub',
+    category: 'Electronics',
+    course: 'ECE',
+    dueDate: null,
+    description: 'A complete guide to microcontroller programming and the Internet of Things ecosystem.'
+  },
+  {
+    id: 'B109',
+    title: 'Strategic Brand Management',
+    author: 'David Ogilvy',
+    status: 'Available',
+    shelf: 'M4',
+    floor: '3',
+    section: 'Business Wing',
+    category: 'Marketing',
+    course: 'MBA',
+    dueDate: null,
+    description: 'Foundational principles of building and managing world-class brands in the digital age.'
+  },
+  {
+    id: 'B110',
+    title: 'The Art of Storytelling',
+    author: 'Maya Angelou',
+    status: 'Available',
+    shelf: 'H2',
+    floor: '3',
+    section: 'Literature Row',
+    category: 'Literature',
+    course: 'BA',
+    dueDate: null,
+    description: 'Exploring the narrative techniques and emotional depth required for impactful storytelling.'
+  },
+  {
+    id: 'B111',
+    title: 'Python for Data Science',
+    author: 'Guido van Rossum',
+    status: 'Issued',
+    shelf: 'P2',
+    floor: '1',
+    section: 'Programming Bay',
+    category: 'Programming',
+    course: 'CSE',
+    dueDate: '2026-05-15',
+    description: 'Using Python for data manipulation, analysis, and visualization with Pandas and NumPy.'
+  },
+  {
+    id: 'B112',
+    title: 'Microeconomics Theory',
+    author: 'Adam Smith',
+    status: 'Available',
+    shelf: 'S1',
+    floor: '3',
+    section: 'Economics Wing',
+    category: 'Finance',
+    course: 'MBA',
+    dueDate: null,
+    description: 'An analysis of market structures, consumer behavior, and firm theory.'
+  },
+  {
+    id: 'D401',
+    title: 'Cloud Infrastructure Guide',
+    author: 'E-Resource',
+    status: 'Available',
+    shelf: 'Digital-1',
+    floor: '4',
+    section: 'Cloud Lab',
+    category: 'Digital',
+    course: 'CSE',
+    dueDate: null,
+    description: 'Digital access to distributed systems and cloud architecture patterns.'
+  },
+  {
+    id: 'D402',
+    title: 'Digital Research Methods',
+    author: 'E-Resource',
+    status: 'Available',
+    shelf: 'Digital-2',
+    floor: '4',
+    section: 'Research Zone',
+    category: 'Digital',
+    course: 'BA',
+    dueDate: null,
+    description: 'Comprehensive database of modern research methodologies and digital archives.'
   }
 ];

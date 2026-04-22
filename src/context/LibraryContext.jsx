@@ -20,9 +20,54 @@ function diffInDays(dateString) {
 export function LibraryProvider({ children }) {
   const [books, setBooks] = useState(seedBooks);
   const [currentUser, setCurrentUser] = useState(null);
-  const [history, setHistory] = useState([]);
-  const [notifications, setNotifications] = useState([]);
-  const [reservations, setReservations] = useState([]);
+  const [history, setHistory] = useState([
+    {
+      id: 'H-1',
+      bookId: 'B102',
+      bookTitle: 'React for Campus Systems',
+      action: 'Issued',
+      issueDate: '2026-04-15',
+      returnDate: '-'
+    },
+    {
+      id: 'H-2',
+      bookId: 'B104',
+      bookTitle: 'QR Systems in Education',
+      action: 'Issued',
+      issueDate: '2026-04-10',
+      returnDate: '-'
+    },
+    {
+      id: 'H-3',
+      bookId: 'B101',
+      bookTitle: 'Digital Library Design',
+      action: 'Returned',
+      issueDate: '2026-04-01',
+      returnDate: '2026-04-08'
+    }
+  ]);
+  const [notifications, setNotifications] = useState([
+    {
+      id: 'N-1',
+      message: 'Welcome to the Smart Library System! Explore our new QR features.',
+      type: 'System',
+      createdAt: new Date().toISOString()
+    },
+    {
+      id: 'N-2',
+      message: 'Reminder: "QR Systems in Education" is due in 3 days.',
+      type: 'Reminder',
+      createdAt: new Date().toISOString()
+    }
+  ]);
+  const [reservations, setReservations] = useState([
+    {
+      id: 'R-1',
+      bookId: 'B111',
+      bookTitle: 'Python for Data Science',
+      status: 'Pending'
+    }
+  ]);
 
   function login(identifier, course) {
     const nextUser = {
