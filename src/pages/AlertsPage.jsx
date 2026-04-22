@@ -1,9 +1,8 @@
+import { useLibrary } from '../context/LibraryContext.jsx';
+
 function AlertsPage() {
-  const alerts = [
-    { id: 'A1', message: 'Your book return is due in 2 days.', type: 'Due date' },
-    { id: 'A2', message: 'New QR issue workflow is active.', type: 'System' },
-    { id: 'A3', message: 'Library closes early on Friday.', type: 'Notice' }
-  ];
+  const { notifications, autoDueAlerts } = useLibrary();
+  const alerts = [...autoDueAlerts, ...notifications];
 
   return (
     <div className="page-shell page-card-grid">
@@ -21,6 +20,7 @@ function AlertsPage() {
               <p>{alert.message}</p>
             </div>
           ))}
+          {alerts.length === 0 && <p className="muted">No alerts right now.</p>}
         </div>
       </section>
     </div>

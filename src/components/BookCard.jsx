@@ -15,6 +15,8 @@ function BookCard({ book, badge, action }) {
 
       <div className="card-meta">
         <span>Shelf: {book.shelf}</span>
+        <span>Floor: {book.floor}</span>
+        <span>Section: {book.section}</span>
         {book.dueDate && <span>Due: {book.dueDate}</span>}
       </div>
 

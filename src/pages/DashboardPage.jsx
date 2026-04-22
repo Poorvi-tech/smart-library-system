@@ -1,30 +1,27 @@
-import { books } from '../data/books.js';
+import { useLibrary } from '../context/LibraryContext.jsx';
 
 function DashboardPage() {
-  const issued = books.filter((book) => book.status === 'Issued');
-  const notifications = [
-    'New QR-based issue workflow now live.',
-    'Reminder: return books before due date to avoid fines.',
-    'Campus library open until 9 PM today.'
-  ];
+  const { currentUser, books, issuedBooks, notifications, autoDueAlerts, history, reservations } = useLibrary();
+  const latestNotes = [...autoDueAlerts, ...notifications].slice(0, 6);
 
   return (
     <div className="dashboard-grid">
       <section className="dashboard-hero card hero-card">
         <div className="hero-copy">
           <p className="eyebrow">Smart Library Insights</p>
-          <h2>Keep track of your books and campus updates.</h2>
+          <h2>Welcome {currentUser?.id}, track your complete library activity.</h2>
           <p className="hero-copy-text">
-            View issued books, due dates and notifications with a modern, responsive dashboard built for student workflows.
+            Personalized for {currentUser?.course}: issued books, due alerts, history, and reservation updates.
           </p>
           <div className="hero-stats">
             <div className="stat-box">
-              <span>Issued</span>
-              <strong>{issued.length}</strong>
+              <span>Issued :  {issuedBooks.length}</span>
             </div>
             <div className="stat-box">
-              <span>Available</span>
-              <strong>{books.length - issued.length}</strong>
+              <span>Available : {books.length - issuedBooks.length}</span>
+            </div>
+            <div className="stat-box">
+              <span>Reservations : {reservations.length}</span>
             </div>
           </div>
         </div>
@@ -39,14 +36,14 @@ function DashboardPage() {
         <div className="card-header notifications-header">
           <div>
             <h3>Notifications</h3>
-            <p className="muted">Stay updated with library alerts and reminders.</p>
+            <p className="muted">Live due-date and system alerts.</p>
           </div>
           <span className="badge accent">New</span>
         </div>
         <ul>
-          {notifications.map((note) => (
-            <li key={note} className="notification-item">
-              {note}
+          {latestNotes.map((note) => (
+            <li key={note.id} className="notification-item">
+              <strong>{note.type}:</strong> {note.message}
             </li>
           ))}
         </ul>
@@ -60,7 +57,7 @@ function DashboardPage() {
           </div>
         </div>
         <div className="list-grid issued-list">
-          {issued.map((book) => (
+          {issuedBooks.map((book) => (
             <div key={book.id} className="mini-card issued-mini-card">
               <div>
                 <h4>{book.title}</h4>
@@ -71,6 +68,30 @@ function DashboardPage() {
               </div>
             </div>
           ))}
+          {issuedBooks.length === 0 && <p className="muted">No books currently issued.</p>}
+        </div>
+      </section>
+
+      <section className="card issued-card">
+        <div className="card-header">
+          <div>
+            <h3>Issue & Return Tracking</h3>
+            <p className="muted">Latest transactions for transparency.</p>
+          </div>
+        </div>
+        <div className="list-grid issued-list">
+          {history.slice(0, 5).map((entry) => (
+            <div key={entry.id} className="mini-card issued-mini-card">
+              <div>
+                <h4>{entry.bookTitle}</h4>
+                <p>{entry.action}</p>
+              </div>
+              <div className="due-pill">
+                {entry.action === 'Issued' ? `Issue ${entry.issueDate}` : `Return ${entry.returnDate}`}
+              </div>
+            </div>
+          ))}
+          {history.length === 0 && <p className="muted">No history yet. Use QR issue/return to create entries.</p>}
         </div>
       </section>
     </div>

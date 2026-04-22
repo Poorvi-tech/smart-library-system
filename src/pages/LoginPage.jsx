@@ -1,14 +1,17 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useLibrary } from '../context/LibraryContext.jsx';
 
-function LoginPage({ onLogin }) {
+function LoginPage() {
   const [identifier, setIdentifier] = useState('');
+  const [course, setCourse] = useState('CSE');
   const navigate = useNavigate();
+  const { login } = useLibrary();
 
   function handleSubmit(event) {
     event.preventDefault();
     if (!identifier.trim()) return;
-    onLogin(identifier.trim());
+    login(identifier.trim(), course);
     navigate('/dashboard');
   }
 
@@ -33,9 +36,18 @@ function LoginPage({ onLogin }) {
               placeholder="e.g. 2026CSE001 or p@example.edu"
             />
           </label>
+          <label>
+            Course / Branch
+            <select value={course} onChange={(event) => setCourse(event.target.value)}>
+              <option value="CSE">CSE</option>
+              <option value="ECE">ECE</option>
+              <option value="MBA">MBA</option>
+              <option value="BA">BA</option>
+            </select>
+          </label>
 
           <button className="btn btn-primary" type="submit">
-            Continue
+            Verify & Continue
           </button>
         </form>
 

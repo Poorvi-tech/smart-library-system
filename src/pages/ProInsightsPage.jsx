@@ -1,8 +1,12 @@
+import { useLibrary } from '../context/LibraryContext.jsx';
+
 function ProInsightsPage() {
+  const { books, issuedBooks, reservations, history } = useLibrary();
   const stats = [
-    { title: 'Average Issue Time', value: '12 min' },
-    { title: 'Active Users', value: '234' },
-    { title: 'Books Issued Today', value: '34' }
+    { title: 'Total Inventory', value: String(books.length) },
+    { title: 'Issued Right Now', value: String(issuedBooks.length) },
+    { title: 'Reservations', value: String(reservations.length) },
+    { title: 'Transactions', value: String(history.length) }
   ];
 
   return (

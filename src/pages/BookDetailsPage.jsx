@@ -1,8 +1,9 @@
 import { Link, useParams } from 'react-router-dom';
-import { books } from '../data/books.js';
+import { useLibrary } from '../context/LibraryContext.jsx';
 
 function BookDetailsPage() {
   const { id } = useParams();
+  const { books } = useLibrary();
   const book = books.find((item) => item.id === id);
 
   if (!book) {
@@ -33,6 +34,8 @@ function BookDetailsPage() {
         <div className="detail-body">
           <div>
             <p><strong>Book ID:</strong> {book.id}</p>
+            <p><strong>Floor:</strong> {book.floor}</p>
+            <p><strong>Section:</strong> {book.section}</p>
             <p><strong>Shelf:</strong> {book.shelf}</p>
             {book.dueDate && <p><strong>Due Date:</strong> {book.dueDate}</p>}
           </div>

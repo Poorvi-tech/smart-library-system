@@ -6,7 +6,9 @@ export const books = [
     status: 'Available',
     shelf: 'A3',
     floor: '1',
+    section: 'Design Wing',
     category: 'Design',
+    course: 'CSE',
     dueDate: null,
     description: 'A guide to building smart library ecosystems with user-centric design.'
   },
@@ -17,7 +19,9 @@ export const books = [
     status: 'Issued',
     shelf: 'B1',
     floor: '1',
+    section: 'Programming Bay',
     category: 'Programming',
+    course: 'CSE',
     dueDate: '2026-05-01',
     description: 'Modern front-end patterns for campus and library applications.'
   },
@@ -28,7 +32,9 @@ export const books = [
     status: 'Available',
     shelf: 'C4',
     floor: '2',
+    section: 'Data Science Cluster',
     category: 'Analytics',
+    course: 'CSE',
     dueDate: null,
     description: 'Insights into analytics, bookings, and student engagement.'
   },
@@ -39,7 +45,9 @@ export const books = [
     status: 'Issued',
     shelf: 'A2',
     floor: '2',
+    section: 'Automation Zone',
     category: 'Technology',
+    course: 'ECE',
     dueDate: '2026-04-28',
     description: 'Practical strategies for QR-based workflows in libraries.'
   },
@@ -50,7 +58,9 @@ export const books = [
     status: 'Available',
     shelf: 'D3',
     floor: '3',
+    section: 'Operations Corner',
     category: 'Management',
+    course: 'MBA',
     dueDate: null,
     description: 'A holistic view of shelf location, availability, and inventory control.'
   },
@@ -61,7 +71,9 @@ export const books = [
     status: 'Issued',
     shelf: 'B5',
     floor: '3',
+    section: 'Humanities Shelf',
     category: 'Student Life',
+    course: 'BA',
     dueDate: '2026-05-08',
     description: 'Material on student reading habits and campus resource planning.'
   }

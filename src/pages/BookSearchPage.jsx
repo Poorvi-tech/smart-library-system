@@ -1,19 +1,20 @@
 import { useMemo, useState } from 'react';
 import BookCard from '../components/BookCard.jsx';
-import { books } from '../data/books.js';
+import { useLibrary } from '../context/LibraryContext.jsx';
 
 function BookSearchPage() {
   const [query, setQuery] = useState('');
+  const { books, personalizedBooks, reserveBook } = useLibrary();
 
   const filteredBooks = useMemo(() => {
     const normalized = query.toLowerCase();
-    return books.filter(
+    return personalizedBooks.filter(
       (book) =>
         book.title.toLowerCase().includes(normalized) ||
         book.author.toLowerCase().includes(normalized) ||
         book.id.toLowerCase().includes(normalized)
     );
-  }, [query]);
+  }, [query, personalizedBooks]);
 
   const availableCount = books.filter((book) => book.status === 'Available').length;
 
@@ -24,7 +25,7 @@ function BookSearchPage() {
           <p className="eyebrow accent-text">Smart Search</p>
           <h2>Explore books with instant search.</h2>
           <p className="muted">
-            Search by title, author or book ID and view availability at a glance.
+            Search by title, author or book ID and view availability with floor-section shelf location.
           </p>
         </div>
         <div className="search-stats">
@@ -54,7 +55,17 @@ function BookSearchPage() {
 
       <section className="book-list">
         {filteredBooks.map((book) => (
-          <BookCard key={book.id} book={book} />
+          <BookCard
+            key={book.id}
+            book={book}
+            action={
+              book.status === 'Issued' ? (
+                <button className="btn btn-secondary" onClick={() => reserveBook(book.id)}>
+                  Reserve
+                </button>
+              ) : null
+            }
+          />
         ))}
         {filteredBooks.length === 0 && (
           <div className="empty-state card">

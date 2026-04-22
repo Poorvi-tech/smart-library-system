@@ -5,7 +5,7 @@ function Navbar({ onLogout, user }) {
     <header className="topbar">
       <div className="brand">Smart Library System</div>
       <div className="topbar-actions">
-        {user && <span className="user-label">Signed in as <strong>{user}</strong></span>}
+        {user && <span className="user-label">Signed in as <strong>{user.id}</strong> ({user.course})</span>}
         <button className="btn btn-ghost" onClick={onLogout}>
           Logout
         </button>

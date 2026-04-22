@@ -1,6 +1,7 @@
-import { books } from '../data/books.js';
+import { useLibrary } from '../context/LibraryContext.jsx';
 
 function BookLocationsPage() {
+  const { books } = useLibrary();
   const floors = [
     {
       id: '1',
@@ -32,7 +33,7 @@ function BookLocationsPage() {
     <div className="page-shell page-card-grid location-page">
       <section className="card feature-card">
         <h2>Book Locations</h2>
-        <p className="muted">Locate book shelves by floor and category across the campus library.</p>
+        <p className="muted">Locate exact floor, section and shelf using current library inventory data.</p>
       </section>
 
       <section className="card location-map-panel">

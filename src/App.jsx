@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout.jsx';
 import LoginPage from './pages/LoginPage.jsx';
@@ -10,16 +9,17 @@ import AlertsPage from './pages/AlertsPage.jsx';
 import BookLocationsPage from './pages/BookLocationsPage.jsx';
 import ScanIssuePage from './pages/ScanIssuePage.jsx';
 import ProInsightsPage from './pages/ProInsightsPage.jsx';
+import { useLibrary } from './context/LibraryContext.jsx';
 
 function App() {
-  const [user, setUser] = useState(null);
+  const { currentUser } = useLibrary();
 
   return (
     <div className="app-shell">
       <Routes>
-        <Route path="/login" element={<LoginPage onLogin={setUser} />} />
-        <Route path="/" element={<Layout user={user} onLogout={() => setUser(null)} />}>
-          <Route index element={<Navigate to={user ? '/dashboard' : '/login'} replace />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/" element={<Layout />}>
+          <Route index element={<Navigate to={currentUser ? '/dashboard' : '/login'} replace />} />
           <Route path="dashboard" element={<DashboardPage />} />
           <Route path="search" element={<BookSearchPage />} />
           <Route path="qr-scan" element={<QRScanPage />} />
