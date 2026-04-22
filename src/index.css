@@ -631,6 +631,57 @@ button {
   text-align: center;
 }
 
+#reader {
+  border-radius: 20px;
+  overflow: hidden;
+  border: none !important;
+  background: #f8fafc;
+}
+
+#reader__status_span {
+  display: none;
+}
+
+#reader__dashboard_section_csr button {
+  padding: 0.6rem 1rem;
+  border-radius: 999px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  margin: 0.5rem;
+}
+
+.scanned-book-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.mt-4 {
+  margin-top: 1rem;
+}
+
+.mr-2 {
+  margin-right: 0.5rem;
+}
+
+.code-tag {
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.code-tag:hover {
+  background-color: #dbeafe;
+}
+
 @keyframes pulseButton {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-2px); }
