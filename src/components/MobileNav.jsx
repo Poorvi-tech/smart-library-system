@@ -4,7 +4,8 @@ import {
   Search, 
   QrCode, 
   Bell, 
-  MapPin 
+  MapPin,
+  ShieldAlert
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -13,6 +14,7 @@ function MobileNav() {
     { to: '/dashboard', icon: <LayoutDashboard size={24} />, label: 'Home' },
     { to: '/search', icon: <Search size={24} />, label: 'Search' },
     { to: '/qr-scan', icon: <QrCode size={24} />, label: 'Scan' },
+    { to: '/admin', icon: <ShieldAlert size={24} />, label: 'Admin' },
     { to: '/alerts', icon: <Bell size={24} />, label: 'Alerts' },
     { to: '/locations', icon: <MapPin size={24} />, label: 'Map' },
   ];

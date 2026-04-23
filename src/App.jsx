@@ -9,6 +9,7 @@ import AlertsPage from './pages/AlertsPage.jsx';
 import BookLocationsPage from './pages/BookLocationsPage.jsx';
 import ScanIssuePage from './pages/ScanIssuePage.jsx';
 import ProInsightsPage from './pages/ProInsightsPage.jsx';
+import AdminPage from './pages/AdminPage.jsx';
 import { useLibrary } from './context/LibraryContext.jsx';
 
 function App() {
@@ -27,6 +28,7 @@ function App() {
           <Route path="locations" element={<BookLocationsPage />} />
           <Route path="issue" element={<ScanIssuePage />} />
           <Route path="insights" element={<ProInsightsPage />} />
+          <Route path="admin" element={<AdminPage />} />
           <Route path="book/:id" element={<BookDetailsPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />

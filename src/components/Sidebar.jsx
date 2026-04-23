@@ -7,7 +7,8 @@ import {
   MapPin, 
   BookOpen, 
   BarChart3,
-  Library
+  Library,
+  ShieldAlert
 } from 'lucide-react';
 
 import { motion } from 'framer-motion';
@@ -84,6 +85,10 @@ function Sidebar() {
         <NavLink to="/insights" className={({ isActive }) => isActive ? 'menu-item active' : 'menu-item'}>
           <BarChart3 size={20} />
           <span>Insights</span>
+        </NavLink>
+        <NavLink to="/admin" className={({ isActive }) => isActive ? 'menu-item active' : 'menu-item'}>
+          <ShieldAlert size={20} />
+          <span>Admin Panel</span>
         </NavLink>
       </div>
     </aside>
