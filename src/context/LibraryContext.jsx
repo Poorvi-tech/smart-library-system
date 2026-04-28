@@ -1,65 +1,15 @@
-import { createContext, useContext, useMemo, useState } from 'react';
-import { books as seedBooks } from '../data/books.js';
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { adminAPI, bookAPI, notificationAPI } from '../services/api.js';
 
 const LibraryContext = createContext(null);
 
-function getDateOffset(days) {
-  const date = new Date();
-  date.setDate(date.getDate() + days);
-  return date.toISOString().slice(0, 10);
-}
-
-function diffInDays(dateString) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const due = new Date(dateString);
-  due.setHours(0, 0, 0, 0);
-  return Math.floor((due - today) / (24 * 60 * 60 * 1000));
-}
-
 export function LibraryProvider({ children }) {
-  const [books, setBooks] = useState(seedBooks);
+  const [books, setBooks] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
-  const [history, setHistory] = useState([
-    {
-      id: 'H-1',
-      bookId: 'B102',
-      bookTitle: 'React for Campus Systems',
-      action: 'Issued',
-      issueDate: '2026-04-15',
-      returnDate: '-'
-    },
-    {
-      id: 'H-2',
-      bookId: 'B104',
-      bookTitle: 'QR Systems in Education',
-      action: 'Issued',
-      issueDate: '2026-04-10',
-      returnDate: '-'
-    },
-    {
-      id: 'H-3',
-      bookId: 'B101',
-      bookTitle: 'Digital Library Design',
-      action: 'Returned',
-      issueDate: '2026-04-01',
-      returnDate: '2026-04-08'
-    }
-  ]);
-  const [notifications, setNotifications] = useState([
-    {
-      id: 'N-1',
-      message: 'Welcome to the Smart Library System! Explore our new QR features.',
-      type: 'System',
-      createdAt: new Date().toISOString()
-    },
-    {
-      id: 'N-2',
-      message: 'Reminder: "QR Systems in Education" is due in 3 days.',
-      type: 'Reminder',
-      createdAt: new Date().toISOString()
-    }
-  ]);
+  const [issuedBooks, setIssuedBooks] = useState([]);
+  const [history, setHistory] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+  const [autoDueAlerts, setAutoDueAlerts] = useState([]);
   const [reservations, setReservations] = useState([
     {
       id: 'R-1',
@@ -68,18 +18,123 @@ export function LibraryProvider({ children }) {
       status: 'Pending'
     }
   ]);
+  const [adminStats, setAdminStats] = useState({
+    dashboard: null,
+    users: [],
+    userStats: null,
+    systemAnalytics: null
+  });
 
-  function login(identifier, course) {
+  async function fetchAllBooks() {
+    const result = await bookAPI.getAllBooks();
+    if (result.success) {
+      setBooks(result.books || []);
+    }
+  }
+
+  async function fetchIssuedBooks(studentId) {
+    if (!studentId) return;
+    const result = await bookAPI.getIssuedBooks(studentId);
+    if (result.success) {
+      setIssuedBooks(result.books || []);
+    }
+  }
+
+  async function fetchNotifications(studentId) {
+    if (!studentId) return;
+    const result = await notificationAPI.getNotifications(studentId);
+    if (result.success) {
+      setNotifications(result.notifications || []);
+    }
+  }
+
+  async function fetchHistory(studentId) {
+    if (!studentId) return;
+    const result = await notificationAPI.getHistory(studentId);
+    if (result.success) {
+      setHistory(result.history || []);
+    }
+  }
+
+  async function fetchAlerts(studentId) {
+    if (!studentId) return;
+    const [overdueResult, dueSoonResult] = await Promise.all([
+      notificationAPI.getOverdueAlerts(studentId),
+      notificationAPI.getDueSoonAlerts(studentId)
+    ]);
+
+    const overdue = overdueResult.success ? overdueResult.alerts || [] : [];
+    const dueSoon = dueSoonResult.success ? dueSoonResult.alerts || [] : [];
+    setAutoDueAlerts([...overdue, ...dueSoon]);
+  }
+
+  async function fetchAdminData(studentId) {
+    if (!studentId) return;
+
+    const [dashboardResult, usersResult, userStatsResult, systemResult] = await Promise.all([
+      adminAPI.getDashboardStats(studentId),
+      adminAPI.getAllUsers(),
+      adminAPI.getUserStats(),
+      adminAPI.getSystemAnalytics()
+    ]);
+
+    setAdminStats({
+      dashboard: dashboardResult.success ? dashboardResult.stats : null,
+      users: usersResult.success ? usersResult.users || [] : [],
+      userStats: userStatsResult.success ? userStatsResult.stats : null,
+      systemAnalytics: systemResult.success ? systemResult.analytics : null
+    });
+  }
+
+  async function refreshUserData(user) {
+    await Promise.all([
+      fetchAllBooks(),
+      fetchIssuedBooks(user.id),
+      fetchNotifications(user.id),
+      fetchHistory(user.id),
+      fetchAlerts(user.id)
+    ]);
+
+    if (user.isAdmin) {
+      await fetchAdminData(user.id);
+    } else {
+      setAdminStats({
+        dashboard: null,
+        users: [],
+        userStats: null,
+        systemAnalytics: null
+      });
+    }
+  }
+
+  useEffect(() => {
+    fetchAllBooks();
+  }, []);
+
+  function login(userData) {
     const nextUser = {
-      id: identifier,
-      course: course || 'CSE',
-      email: identifier.includes('@') ? identifier : `${identifier}@college.edu`
+      id: userData.id,
+      course: userData.course || 'CSE',
+      email: userData.email || `${userData.id}@college.edu`,
+      name: userData.name || userData.id,
+      isAdmin: Boolean(userData.isAdmin)
     };
     setCurrentUser(nextUser);
+    refreshUserData(nextUser);
   }
 
   function logout() {
     setCurrentUser(null);
+    setIssuedBooks([]);
+    setHistory([]);
+    setNotifications([]);
+    setAutoDueAlerts([]);
+    setAdminStats({
+      dashboard: null,
+      users: [],
+      userStats: null,
+      systemAnalytics: null
+    });
   }
 
   function pushNotification(message, type = 'System') {
@@ -94,58 +149,41 @@ export function LibraryProvider({ children }) {
     ]);
   }
 
-  function issueBook(bookId) {
-    const target = books.find((book) => book.id === bookId);
-    if (!target || target.status === 'Issued') return false;
-    const dueDate = getDateOffset(7);
+  async function issueBook(bookId) {
+    if (!currentUser?.id) return false;
 
-    setBooks((prev) =>
-      prev.map((book) =>
-        book.id === bookId
-          ? { ...book, status: 'Issued', dueDate, issuedTo: currentUser?.id ?? 'student' }
-          : book
-      )
-    );
+    const result = await bookAPI.issueBook(bookId, currentUser.id);
+    if (!result.success) {
+      return false;
+    }
 
-    setHistory((prev) => [
-      {
-        id: `H-${Date.now()}`,
-        bookId: target.id,
-        bookTitle: target.title,
-        action: 'Issued',
-        issueDate: new Date().toISOString().slice(0, 10),
-        returnDate: '-'
-      },
-      ...prev
+    await Promise.all([
+      fetchAllBooks(),
+      fetchIssuedBooks(currentUser.id),
+      fetchNotifications(currentUser.id),
+      fetchHistory(currentUser.id),
+      fetchAlerts(currentUser.id)
     ]);
 
-    pushNotification(`${target.title} issued successfully. Return by ${dueDate}.`, 'Issue');
     return true;
   }
 
-  function returnBook(bookId) {
-    const target = books.find((book) => book.id === bookId);
-    if (!target || target.status === 'Available') return false;
+  async function returnBook(bookId) {
+    if (!currentUser?.id) return false;
 
-    setBooks((prev) =>
-      prev.map((book) =>
-        book.id === bookId ? { ...book, status: 'Available', dueDate: null, issuedTo: null } : book
-      )
-    );
+    const result = await bookAPI.returnBook(bookId, currentUser.id);
+    if (!result.success) {
+      return false;
+    }
 
-    setHistory((prev) => [
-      {
-        id: `H-${Date.now()}`,
-        bookId: target.id,
-        bookTitle: target.title,
-        action: 'Returned',
-        issueDate: '-',
-        returnDate: new Date().toISOString().slice(0, 10)
-      },
-      ...prev
+    await Promise.all([
+      fetchAllBooks(),
+      fetchIssuedBooks(currentUser.id),
+      fetchNotifications(currentUser.id),
+      fetchHistory(currentUser.id),
+      fetchAlerts(currentUser.id)
     ]);
 
-    pushNotification(`${target.title} returned successfully.`, 'Return');
     return true;
   }
 
@@ -165,32 +203,7 @@ export function LibraryProvider({ children }) {
     return true;
   }
 
-  const issuedBooks = useMemo(() => books.filter((book) => book.status === 'Issued'), [books]);
   const availableBooks = useMemo(() => books.filter((book) => book.status === 'Available'), [books]);
-
-  const autoDueAlerts = useMemo(() => {
-    return issuedBooks
-      .map((book) => {
-        if (!book.dueDate) return null;
-        const days = diffInDays(book.dueDate);
-        if (days < 0) {
-          return {
-            id: `DUE-${book.id}`,
-            message: `${book.title} is overdue by ${Math.abs(days)} day(s). Estimated fine: Rs ${Math.abs(days) * 10}.`,
-            type: 'Overdue'
-          };
-        }
-        if (days === 1) {
-          return {
-            id: `DUE-${book.id}`,
-            message: `${book.title} is due tomorrow.`,
-            type: 'Due Tomorrow'
-          };
-        }
-        return null;
-      })
-      .filter(Boolean);
-  }, [issuedBooks]);
 
   const personalizedBooks = useMemo(() => {
     if (!currentUser) return books;
@@ -209,6 +222,7 @@ export function LibraryProvider({ children }) {
     issuedBooks,
     availableBooks,
     personalizedBooks,
+    adminStats,
     login,
     logout,
     issueBook,

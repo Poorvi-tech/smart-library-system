@@ -1,20 +1,55 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLibrary } from '../context/LibraryContext.jsx';
+import { authAPI } from '../services/api.js';
 import { motion } from 'framer-motion';
 import { Library, ArrowRight, ShieldCheck, Zap, QrCode, BookOpen, Sparkles, Globe } from 'lucide-react';
 
 function LoginPage() {
+  const [isSignup, setIsSignup] = useState(false);
   const [identifier, setIdentifier] = useState('');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [course, setCourse] = useState('CSE');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
   const { login } = useLibrary();
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
     if (!identifier.trim()) return;
-    login(identifier.trim(), course);
-    navigate('/dashboard');
+    if (isSignup && !name.trim()) return;
+
+    setLoading(true);
+    setError('');
+
+    try {
+      const result = isSignup
+        ? await authAPI.signup({
+            studentId: identifier.trim(),
+            name: name.trim(),
+            email: email.trim(),
+            course
+          })
+        : await authAPI.login(identifier.trim(), course);
+
+      if (result.success) {
+        login(result.user);
+        navigate(result.user.isAdmin ? '/admin' : '/dashboard');
+      } else {
+        setError(result.error || (isSignup ? 'Signup failed' : 'Login failed'));
+      }
+    } catch (err) {
+      setError('Failed to connect to server. Make sure the backend is running.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function toggleAuthMode() {
+    setIsSignup((prev) => !prev);
+    setError('');
   }
 
   const floatingElements = [
@@ -137,11 +172,39 @@ function LoginPage() {
           style={{ width: '100%', maxWidth: '420px', padding: '3rem', borderRadius: '32px', background: 'white', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.08)', border: '1px solid rgba(0,0,0,0.03)' }}
         >
           <div style={{ marginBottom: '3rem', textAlign: 'center' }}>
-            <h3 style={{ fontSize: '2rem', fontWeight: '800', marginBottom: '0.5rem' }}>Student Login</h3>
-            <p className="muted">Welcome back! Please enter your details.</p>
+            <h3 style={{ fontSize: '2rem', fontWeight: '800', marginBottom: '0.5rem' }}>
+              {isSignup ? 'Student Signup' : 'Student Login'}
+            </h3>
+            <p className="muted">
+              {isSignup
+                ? 'Create your account to access the smart library.'
+                : 'Welcome back! Please enter your details.'}
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '1.5rem' }}>
+            {isSignup && (
+              <div style={{ display: 'grid', gap: '0.5rem' }}>
+                <label style={{ fontSize: '0.9rem', fontWeight: '700', color: '#475569' }}>Full Name</label>
+                <input
+                  type="text"
+                  required={isSignup}
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                  placeholder="e.g. Priya Sharma"
+                  style={{
+                    width: '100%',
+                    padding: '1.25rem 1.5rem',
+                    borderRadius: '16px',
+                    border: '1.5px solid #e2e8f0',
+                    fontSize: '1rem',
+                    transition: 'all 0.3s ease',
+                    outline: 'none'
+                  }}
+                />
+              </div>
+            )}
+
             <div style={{ display: 'grid', gap: '0.5rem' }}>
               <label style={{ fontSize: '0.9rem', fontWeight: '700', color: '#475569' }}>Student ID / Email</label>
               <input
@@ -161,6 +224,27 @@ function LoginPage() {
                 }}
               />
             </div>
+
+            {isSignup && (
+              <div style={{ display: 'grid', gap: '0.5rem' }}>
+                <label style={{ fontSize: '0.9rem', fontWeight: '700', color: '#475569' }}>Email (Optional)</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  placeholder="e.g. 2026cse001@college.edu"
+                  style={{
+                    width: '100%',
+                    padding: '1.25rem 1.5rem',
+                    borderRadius: '16px',
+                    border: '1.5px solid #e2e8f0',
+                    fontSize: '1rem',
+                    transition: 'all 0.3s ease',
+                    outline: 'none'
+                  }}
+                />
+              </div>
+            )}
 
             <div style={{ display: 'grid', gap: '0.5rem' }}>
               <label style={{ fontSize: '0.9rem', fontWeight: '700', color: '#475569' }}>Select Your Course</label>
@@ -194,21 +278,64 @@ function LoginPage() {
             <motion.button 
               className="btn btn-primary" 
               type="submit"
-              whileHover={{ scale: 1.02, boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }}
-              whileTap={{ scale: 0.98 }}
+              disabled={loading}
+              whileHover={{ scale: !loading ? 1.02 : 1, boxShadow: !loading ? '0 20px 25px -5px rgb(0 0 0 / 0.1)' : 'none' }}
+              whileTap={{ scale: !loading ? 0.98 : 1 }}
               style={{ 
                 padding: '1.25rem', 
                 fontSize: '1.1rem', 
                 fontWeight: '700',
                 marginTop: '1rem',
-                borderRadius: '16px'
+                borderRadius: '16px',
+                opacity: loading ? 0.6 : 1,
+                cursor: loading ? 'not-allowed' : 'pointer'
               }}
             >
-              Access Library <ArrowRight size={20} style={{ marginLeft: '10px' }} />
+              {loading
+                ? isSignup
+                  ? 'Creating account...'
+                  : 'Logging in...'
+                : isSignup
+                ? 'Create Account'
+                : 'Access Library'}{' '}
+              <ArrowRight size={20} style={{ marginLeft: '10px' }} />
             </motion.button>
+
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                style={{
+                  marginTop: '1rem',
+                  padding: '1rem',
+                  borderRadius: '12px',
+                  background: '#fee2e2',
+                  color: '#991b1b',
+                  fontSize: '0.9rem',
+                  fontWeight: '600',
+                  border: '1px solid #fecaca'
+                }}
+              >
+                {error}
+              </motion.div>
+            )}
           </form>
 
           <div style={{ marginTop: '3rem', textAlign: 'center' }}>
+            <button
+              type="button"
+              onClick={toggleAuthMode}
+              style={{
+                border: 'none',
+                background: 'transparent',
+                color: 'var(--primary)',
+                fontWeight: '700',
+                cursor: 'pointer',
+                marginBottom: '0.75rem'
+              }}
+            >
+              {isSignup ? 'Already have an account? Login' : "New here? Create an account"}
+            </button>
             <p className="muted" style={{ fontSize: '0.9rem' }}>
               Need help? <a href="#" style={{ color: 'var(--primary)', fontWeight: '700', textDecoration: 'none' }}>Contact Librarian</a>
             </p>

@@ -12,9 +12,11 @@ import {
 } from 'lucide-react';
 
 import { motion } from 'framer-motion';
+import { useLibrary } from '../context/LibraryContext.jsx';
 
 function Sidebar() {
   const location = useLocation();
+  const { currentUser } = useLibrary();
 
   return (
     <aside className="sidebar">
@@ -86,10 +88,12 @@ function Sidebar() {
           <BarChart3 size={20} />
           <span>Insights</span>
         </NavLink>
-        <NavLink to="/admin" className={({ isActive }) => isActive ? 'menu-item active' : 'menu-item'}>
-          <ShieldAlert size={20} />
-          <span>Admin Panel</span>
-        </NavLink>
+        {currentUser?.isAdmin && (
+          <NavLink to="/admin" className={({ isActive }) => isActive ? 'menu-item active' : 'menu-item'}>
+            <ShieldAlert size={20} />
+            <span>Admin Panel</span>
+          </NavLink>
+        )}
       </div>
     </aside>
   );

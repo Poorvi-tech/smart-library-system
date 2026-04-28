@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Users, 
@@ -17,12 +18,31 @@ import {
 import { useLibrary } from '../context/LibraryContext';
 
 const AdminPage = () => {
-  const { books, history } = useLibrary();
+  const { books, currentUser, adminStats } = useLibrary();
   const [activeTab, setActiveTab] = useState('overview');
   const [searchQuery, setSearchQuery] = useState('');
 
+  if (!currentUser?.isAdmin) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   // Derived data for students
   const students = useMemo(() => {
+    if (adminStats.users?.length) {
+      return adminStats.users
+        .filter((user) => !user.isAdmin)
+        .map((user) => {
+          const booksHeld = books.filter((book) => book.issuedTo === user.studentId);
+          return {
+            id: user.studentId,
+            name: user.name,
+            course: user.course,
+            booksHeld,
+            lastActive: 'Recent'
+          };
+        });
+    }
+
     const studentMap = new Map();
     books.forEach(book => {
       if (book.issuedTo) {
@@ -55,10 +75,13 @@ const AdminPage = () => {
     return Array.from(studentMap.values());
   }, [books]);
 
+  const systemAnalytics = adminStats.systemAnalytics;
+  const userStats = adminStats.userStats;
+
   const stats = [
-    { label: 'Total Books', value: books.length, icon: <Book size={24} />, color: '#3b82f6', gradient: 'linear-gradient(135deg, #3b82f6, #2563eb)' },
-    { label: 'Active Students', value: students.length, icon: <Users size={24} />, color: '#10b981', gradient: 'linear-gradient(135deg, #10b981, #059669)' },
-    { label: 'Issued Books', value: books.filter(b => b.status === 'Issued').length, icon: <Clock size={24} />, color: '#f59e0b', gradient: 'linear-gradient(135deg, #f59e0b, #d97706)' },
+    { label: 'Total Books', value: systemAnalytics?.totalBooks ?? books.length, icon: <Book size={24} />, color: '#3b82f6', gradient: 'linear-gradient(135deg, #3b82f6, #2563eb)' },
+    { label: 'Active Students', value: userStats?.activeUsers ?? students.length, icon: <Users size={24} />, color: '#10b981', gradient: 'linear-gradient(135deg, #10b981, #059669)' },
+    { label: 'Issued Books', value: systemAnalytics?.issuedBooks ?? books.filter(b => b.status === 'Issued').length, icon: <Clock size={24} />, color: '#f59e0b', gradient: 'linear-gradient(135deg, #f59e0b, #d97706)' },
     { label: 'Overdue', value: books.filter(b => b.dueDate && new Date(b.dueDate) < new Date()).length, icon: <AlertCircle size={24} />, color: '#ef4444', gradient: 'linear-gradient(135deg, #ef4444, #dc2626)' },
   ];
 

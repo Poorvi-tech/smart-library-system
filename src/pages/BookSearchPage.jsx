@@ -1,22 +1,40 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import BookCard from '../components/BookCard.jsx';
 import { useLibrary } from '../context/LibraryContext.jsx';
+import { bookAPI } from '../services/api.js';
 import { Search, Book, CheckCircle2, Filter } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 function BookSearchPage() {
   const [query, setQuery] = useState('');
-  const { books, personalizedBooks, reserveBook } = useLibrary();
+  const [searchedBooks, setSearchedBooks] = useState([]);
+  const { books, personalizedBooks, reserveBook, currentUser } = useLibrary();
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function runSearch() {
+      const normalized = query.trim();
+      if (!normalized) {
+        setSearchedBooks(personalizedBooks);
+        return;
+      }
+
+      const result = await bookAPI.searchBooks(normalized, currentUser?.course || '');
+      if (isMounted) {
+        setSearchedBooks(result.success ? result.books || [] : []);
+      }
+    }
+
+    runSearch();
+    return () => {
+      isMounted = false;
+    };
+  }, [query, currentUser?.course, personalizedBooks]);
 
   const filteredBooks = useMemo(() => {
-    const normalized = query.toLowerCase();
-    return personalizedBooks.filter(
-      (book) =>
-        book.title.toLowerCase().includes(normalized) ||
-        book.author.toLowerCase().includes(normalized) ||
-        book.id.toLowerCase().includes(normalized)
-    );
-  }, [query, personalizedBooks]);
+    return searchedBooks;
+  }, [searchedBooks]);
 
   const availableCount = books.filter((book) => book.status === 'Available').length;
 

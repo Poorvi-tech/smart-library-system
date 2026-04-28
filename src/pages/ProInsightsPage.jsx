@@ -3,13 +3,15 @@ import { motion } from 'framer-motion';
 import { TrendingUp, Users, BookOpen, Clock, BarChart2 } from 'lucide-react';
 
 function ProInsightsPage() {
-  const { books, issuedBooks, reservations, history } = useLibrary();
+  const { books, issuedBooks, reservations, adminStats } = useLibrary();
+  const systemAnalytics = adminStats.systemAnalytics;
+  const userStats = adminStats.userStats;
   
   const stats = [
-    { title: 'Total Inventory', value: books.length, icon: <BookOpen />, color: '#3b82f6' },
-    { title: 'Issued Now', value: issuedBooks.length, icon: <Clock />, color: '#ef4444' },
+    { title: 'Total Inventory', value: systemAnalytics?.totalBooks ?? books.length, icon: <BookOpen />, color: '#3b82f6' },
+    { title: 'Issued Now', value: systemAnalytics?.issuedBooks ?? issuedBooks.length, icon: <Clock />, color: '#ef4444' },
     { title: 'Active Reserves', value: reservations.length, icon: <TrendingUp />, color: '#f59e0b' },
-    { title: 'Total Members', value: 1240, icon: <Users />, color: '#10b981' }
+    { title: 'Total Members', value: userStats?.totalUsers ?? 0, icon: <Users />, color: '#10b981' }
   ];
 
   const categories = [

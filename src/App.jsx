@@ -14,6 +14,7 @@ import { useLibrary } from './context/LibraryContext.jsx';
 
 function App() {
   const { currentUser } = useLibrary();
+  const isAdmin = Boolean(currentUser?.isAdmin);
 
   return (
     <div className="app-shell">
@@ -28,7 +29,7 @@ function App() {
           <Route path="locations" element={<BookLocationsPage />} />
           <Route path="issue" element={<ScanIssuePage />} />
           <Route path="insights" element={<ProInsightsPage />} />
-          <Route path="admin" element={<AdminPage />} />
+          <Route path="admin" element={isAdmin ? <AdminPage /> : <Navigate to="/dashboard" replace />} />
           <Route path="book/:id" element={<BookDetailsPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />

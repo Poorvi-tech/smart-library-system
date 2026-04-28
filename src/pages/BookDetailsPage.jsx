@@ -1,6 +1,7 @@
+import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { useLibrary } from '../context/LibraryContext.jsx';
 import { motion } from 'framer-motion';
+import { bookAPI } from '../services/api.js';
 import { 
   ArrowLeft, 
   Book, 
@@ -15,8 +16,36 @@ import {
 
 function BookDetailsPage() {
   const { id } = useParams();
-  const { books } = useLibrary();
-  const book = books.find((item) => item.id === id);
+  const [book, setBook] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function fetchBook() {
+      setLoading(true);
+      const result = await bookAPI.getBookById(id);
+      if (isMounted) {
+        setBook(result.success ? result.book : null);
+        setLoading(false);
+      }
+    }
+
+    fetchBook();
+    return () => {
+      isMounted = false;
+    };
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="page-shell">
+        <div className="card" style={{ textAlign: 'center', padding: '4rem' }}>
+          <p className="muted">Loading book details...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!book) {
     return (

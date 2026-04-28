@@ -2,37 +2,80 @@ import { useState, useEffect, useRef } from 'react';
 import BookCard from '../components/BookCard.jsx';
 import { useLibrary } from '../context/LibraryContext.jsx';
 import { Html5QrcodeScanner } from 'html5-qrcode';
-import { QrCode, Library, Camera, XCircle, CheckCircle2, AlertCircle } from 'lucide-react';
+import { QrCode, Library, Camera, XCircle, CheckCircle2, AlertCircle, Loader } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 function QRScanPage() {
-  const { books, issueBook, returnBook, availableBooks } = useLibrary();
+  const { books, issueBook, returnBook } = useLibrary();
   const [scannedBookId, setScannedBookId] = useState(null);
   const [alert, setAlert] = useState('');
   const [scanError, setScanError] = useState('');
   const [isScanning, setIsScanning] = useState(false);
+  const [cameraError, setCameraError] = useState('');
+  const [isInitializing, setIsInitializing] = useState(false);
   const scannerRef = useRef(null);
+  const hasInitialized = useRef(false);
 
   const scannedBook = books.find(b => b.id === scannedBookId);
 
   useEffect(() => {
-    if (isScanning) {
-      const scanner = new Html5QrcodeScanner(
-        "reader",
-        { fps: 10, qrbox: { width: 250, height: 250 } },
-        /* verbose= */ false
-      );
+    let isMounted = true;
+    let initTimeout;
 
-      scanner.render(onScanSuccess, onScanFailure);
+    if (isScanning && !hasInitialized.current) {
+      setIsInitializing(true);
+      setCameraError('');
+      
+      // Use a small timeout to ensure DOM is ready
+      initTimeout = setTimeout(() => {
+        if (!isMounted || hasInitialized.current) return;
+        
+        try {
+          const readerElement = document.getElementById("reader");
+          if (!readerElement) {
+            throw new Error("Reader element not found in DOM");
+          }
 
-      scannerRef.current = scanner;
+          const scanner = new Html5QrcodeScanner(
+            "reader",
+            { 
+              fps: 10, 
+              qrbox: { width: 250, height: 250 },
+              aspectRatio: 1.0,
+              disableFlip: false
+            },
+            /* verbose= */ false
+          );
+
+          scanner.render(onScanSuccess, onScanFailure);
+          
+          if (isMounted) {
+            scannerRef.current = scanner;
+            hasInitialized.current = true;
+            setIsInitializing(false);
+          }
+        } catch (error) {
+          console.error("Failed to initialize scanner", error);
+          if (isMounted) {
+            setCameraError("Unable to access camera. Please check permissions and try again.");
+            setIsInitializing(false);
+            setIsScanning(false);
+          }
+        }
+      }, 100); // Small delay to ensure DOM is ready
     }
 
     return () => {
-      if (scannerRef.current) {
-        scannerRef.current.clear().catch(error => {
+      isMounted = false;
+      clearTimeout(initTimeout);
+      if (scannerRef.current && !isScanning) {
+        try {
+          scannerRef.current.clear();
+        } catch (error) {
           console.error("Failed to clear scanner", error);
-        });
+        }
+        scannerRef.current = null;
+        hasInitialized.current = false;
       }
     };
   }, [isScanning]);
@@ -51,7 +94,11 @@ function QRScanPage() {
   }
 
   function onScanFailure(error) {
-    // console.warn(`Code scan error = ${error}`);
+    // Silently continue - QR code not found in frame
+    // Only log if it's a permission or serious error
+    if (error && error.includes && (error.includes('Permission') || error.includes('NotAllowed'))) {
+      console.error("Camera permission denied:", error);
+    }
   }
 
   function handleBookFound(bookId) {
@@ -67,9 +114,9 @@ function QRScanPage() {
     setScannedBookId(normalizedId);
   }
 
-  function handleIssue() {
+  async function handleIssue() {
     if (!scannedBookId) return;
-    const success = issueBook(scannedBookId);
+    const success = await issueBook(scannedBookId);
     if (success) {
       setAlert('Book Issued Successfully');
       setScanError('');
@@ -79,9 +126,9 @@ function QRScanPage() {
     }
   }
 
-  function handleReturn() {
+  async function handleReturn() {
     if (!scannedBookId) return;
-    const success = returnBook(scannedBookId);
+    const success = await returnBook(scannedBookId);
     if (success) {
       setAlert('Book Returned Successfully');
       setScanError('');
@@ -95,7 +142,13 @@ function QRScanPage() {
     setScannedBookId(null);
     setAlert('');
     setScanError('');
+    setCameraError('');
     setIsScanning(true);
+  }
+
+  function stopScan() {
+    setIsScanning(false);
+    setCameraError('');
   }
 
   return (
@@ -127,9 +180,36 @@ function QRScanPage() {
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
-                  id="reader" 
-                  style={{ width: '100%', borderRadius: '24px', overflow: 'hidden', boxShadow: 'var(--shadow-xl)' }}
-                ></motion.div>
+                  style={{ position: 'relative' }}
+                >
+                  {isInitializing && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      zIndex: 10,
+                      textAlign: 'center',
+                      background: 'rgba(255, 255, 255, 0.95)',
+                      padding: '2rem',
+                      borderRadius: '16px',
+                      backdropFilter: 'blur(10px)'
+                    }}>
+                      <Loader size={40} className="accent-text" style={{ margin: '0 auto 1rem', animation: 'spin 1s linear infinite' }} />
+                      <p style={{ fontWeight: '600', color: '#475569' }}>Initializing camera...</p>
+                    </div>
+                  )}
+                  <div 
+                    id="reader" 
+                    style={{ 
+                      width: '100%', 
+                      borderRadius: '24px', 
+                      overflow: 'hidden', 
+                      boxShadow: 'var(--shadow-xl)',
+                      minHeight: '350px'
+                    }}
+                  ></div>
+                </motion.div>
               ) : (
                 <motion.div 
                   key="placeholder"
@@ -170,18 +250,41 @@ function QRScanPage() {
 
           <div className="scan-button-group" style={{ display: 'flex', gap: '1rem' }}>
             {!isScanning ? (
-              <button className="btn btn-primary" onClick={startScan} style={{ flex: 1, padding: '1.25rem' }}>
+              <button 
+                className="btn btn-primary" 
+                onClick={startScan} 
+                disabled={isInitializing}
+                style={{ flex: 1, padding: '1.25rem', opacity: isInitializing ? 0.6 : 1 }}
+              >
                 <Camera size={20} /> {scannedBook ? 'Scan Another Book' : 'Start Scanning Now'}
               </button>
             ) : (
-              <button className="btn btn-secondary" onClick={() => setIsScanning(false)} style={{ flex: 1, padding: '1.25rem', color: '#ef4444' }}>
+              <button 
+                className="btn btn-secondary" 
+                onClick={stopScan} 
+                style={{ flex: 1, padding: '1.25rem', color: '#ef4444' }}
+              >
                 <XCircle size={20} /> Cancel Scanning
               </button>
             )}
           </div>
 
           <AnimatePresence>
-            {scanError && (
+            {cameraError && (
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="alert error-alert" 
+                style={{ marginTop: '1.5rem', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '0.75rem', backgroundColor: '#fee2e2', borderLeft: '4px solid #ef4444', padding: '1rem' }}
+              >
+                <AlertCircle size={20} style={{ color: '#ef4444', flexShrink: 0 }} /> 
+                <div>
+                  <p style={{ fontWeight: '600', color: '#dc2626', margin: 0 }}>Camera Error</p>
+                  <p style={{ fontSize: '0.875rem', color: '#991b1b', margin: '0.25rem 0 0 0' }}>{cameraError}</p>
+                </div>
+              </motion.div>
+            )}
+            {scanError && !cameraError && (
               <motion.div 
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -246,7 +349,11 @@ function QRScanPage() {
                     className="btn btn-primary" 
                     onClick={handleIssue}
                     disabled={scannedBook.status === 'Issued'}
-                    style={{ padding: '1.1rem' }}
+                    style={{ 
+                      padding: '1.1rem',
+                      opacity: scannedBook.status === 'Issued' ? 0.5 : 1,
+                      cursor: scannedBook.status === 'Issued' ? 'not-allowed' : 'pointer'
+                    }}
                   >
                     Issue This Book
                   </button>
@@ -254,7 +361,11 @@ function QRScanPage() {
                     className="btn btn-secondary" 
                     onClick={handleReturn}
                     disabled={scannedBook.status === 'Available'}
-                    style={{ padding: '1.1rem' }}
+                    style={{ 
+                      padding: '1.1rem',
+                      opacity: scannedBook.status === 'Available' ? 0.5 : 1,
+                      cursor: scannedBook.status === 'Available' ? 'not-allowed' : 'pointer'
+                    }}
                   >
                     Return This Book
                   </button>
