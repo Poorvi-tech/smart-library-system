@@ -84,6 +84,12 @@ For production (Vercel), set:
 VITE_API_BASE_URL=https://your-live-backend-domain/api
 ```
 
+Current deployed backend:
+
+```env
+VITE_API_BASE_URL=https://smart-library-system-sx8z.onrender.com/api
+```
+
 Frontend API fallback behavior:
 - On `localhost`: uses `http://localhost:5000/api` if env is missing
 - On live domain: uses `<current-origin>/api` if env is missing
@@ -188,6 +194,7 @@ npm run preview
 - Deploy frontend to Vercel.
 - Deploy backend to Render/Railway/other Node host.
 - Set `VITE_API_BASE_URL` in Vercel to your backend `/api` URL.
+- For this project, use `https://smart-library-system-sx8z.onrender.com/api`.
 - Ensure backend CORS allows your frontend domain.
 
 ## License
