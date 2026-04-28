@@ -1,7 +1,11 @@
 import express from 'express';
 import cors from 'cors';
+import dotenv from 'dotenv';
 import 'express-async-errors';
 import connectDB from './config/database.js';
+
+// Load environment variables
+dotenv.config();
 import authRoutes from './routes/authRoutes.js';
 import bookRoutes from './routes/bookRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
