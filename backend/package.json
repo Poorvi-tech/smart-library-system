@@ -1,5 +1,5 @@
 {
-  "name": "smart-library-backend",
+  "name": "backend",
   "version": "1.0.0",
   "description": "Backend API for Smart Library System",
   "main": "server.js",
